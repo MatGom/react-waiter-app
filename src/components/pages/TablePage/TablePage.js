@@ -1,14 +1,17 @@
 import styles from './TablePage.module.scss';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { getTableById } from '../../../redux/tablesRedux';
+import { Navigate } from 'react-router-dom';
+import { getTableById, editTableRequest } from '../../../redux/tablesRedux';
 import { getAllStatus } from '../../../redux/statusReducer';
 import Form from 'react-bootstrap/Form';
 import { Col, Row, Button } from 'react-bootstrap';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const TablePage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { id } = useParams();
   const table = useSelector(state => getTableById(state, id));
@@ -21,61 +24,61 @@ const TablePage = () => {
   const [maxPeopleAmount, setMaxPeopleAmount] = useState(table.maxPeopleAmount);
   const [bill, setBill] = useState(table.bill);
 
+  const handleSubmit = e => {
+    e.preventDefault();
+    dispatch(editTableRequest({ status, peopleAmount, maxPeopleAmount, bill, id }));
+    navigate('/');
+  };
+
+  if (!table) {
+    return <Navigate to='' />;
+  }
   return (
     <div>
       <h2>Table {table.id}</h2>
-      <Row className='mb-3 mt-4'>
-        <Col className='col-1 me-3'>
-          <span className='fw-bold'>
-            <p>Status:</p>
-          </span>
-        </Col>
-        <Col className='col-4'>
-          <Form.Select aria-label='Default select example'>
-            <option>{status}</option>
-            {statusData.map(status => (
+      <Form onSubmit={handleSubmit}>
+        <Form.Group className='d-flex align-items-center w-25 mb-3'>
+          <Form.Label className='mx-2'>Status:</Form.Label>
+          <Form.Select onChange={(e) => setStatus(e.target.value)}>
+          {statusData.map(status => (
               <option key={status.id} value={status.option}>
                 {status.option}
               </option>
             ))}
           </Form.Select>
-        </Col>
-      </Row>
-
-      <Row className='mb-3'>
-        <Col className='col-1 me-3'>
-          <span className='fw-bold'>
-            <p>People:</p>
-          </span>
-        </Col>
-        <Col>
-          <input className={styles.optionBox} defaultValue={table.peopleAmount}></input>
-          <span className='m-3'>/</span>
-          <input className={styles.optionBox} defaultValue={table.maxPeopleAmount}></input>
-        </Col>
-      </Row>
-
-      <Row className='mb-3'>
-        <Col className='col-1 me-3'>
-          <span className='fw-bold'>
-            <p>Bill:</p>
-          </span>
-        </Col>
-        <Col>
-          <span className='me-3'>$</span>
-          <input className={styles.optionBox} defaultValue={table.bill}></input>
-        </Col>
-      </Row>
-
-      <Row>
-        <Col className='col-6 d-flex'>
-          <Button className='px-3 py-2' variant='primary' size='sm'>
-            Update
-          </Button>
-        </Col>
-      </Row>
+        </Form.Group>
+        <Form.Group className='d-flex align-items-center w-25 mb-3'>
+          <Form.Label className='mx-2'>People:</Form.Label>
+          <Col>
+            <Form.Control
+              value={peopleAmount}
+              onChange={(e) => setPeopleAmount(e.target.value)}
+            ></Form.Control>{' '}
+          </Col>
+          <span className='mx-2'>/</span>
+          <Col>
+            <Form.Control
+              value={maxPeopleAmount}
+              onChange={(e) => setMaxPeopleAmount(e.target.value)}
+            />
+          </Col>
+        </Form.Group>
+        <Form.Group className='d-flex align-items-center w-25 mb-3'>
+          <Form.Label className='mx-2'>Bill:</Form.Label>
+          <Col sm={4} className='mx-4'>
+            <Form.Control
+              value={bill}
+              onChange={(e) => setBill(e.target.value)}
+            />
+          </Col>
+        </Form.Group>
+        <Button className='mx-2' type='submit'>
+          Update
+        </Button>
+      </Form>
     </div>
   );
 };
 
 export default TablePage;
+
